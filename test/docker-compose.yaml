@@ -1,0 +1,39 @@
+services:
+  mailserver:
+    image: mailserver/docker-mailserver:latest
+    container_name: mailserver
+    hostname: mail
+    domainname: example.com
+    env_file: .env
+    ports:
+      - "25:25"       # SMTP
+      - "143:143"     # IMAP
+      - "587:587"     # SMTP submission
+    volumes:
+      - maildata:/var/mail
+      - mailstate:/var/mail-state
+      - ./config/:/tmp/docker-mailserver/
+    restart: always
+    environment:
+      - ENABLE_SPAMASSASSIN=1
+      - ENABLE_CLAMAV=1
+      - ENABLE_FAIL2BAN=1
+      - ONE_DIR=1
+      - DMS_DEBUG=0
+
+  webmail:
+    image: roundcube/roundcubemail:latest
+    container_name: webmail
+    environment:
+      - ROUNDCUBEMAIL_DEFAULT_HOST=mail.example.com
+      - ROUNDCUBEMAIL_SMTP_SERVER=mail.example.com
+      - ROUNDCUBEMAIL_DES_KEY=SomeRandomKey123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mailserver
+    restart: always
+
+volumes:
+  maildata:
+  mailstate:

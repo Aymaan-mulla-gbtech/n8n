@@ -1,0 +1,632 @@
+{
+  "name": "Tanmay Mail Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "postProcessAction": "nothing",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -1152,
+        1712
+      ],
+      "id": "54c90552-64d9-445b-8357-ddf425de372a",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "Vh3yTYZIlEGmtNFU",
+          "name": "Tanmay IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.to }}{{ $json.cc }}{{ $json.subject }}{{ $json.textPlain ? $json.textPlain : $json.textHtml }}\n",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=\nROLE\nYou are the Senior GRC Operations Specialist. Your primary responsibility is to act as an intelligent filter for high-volume email traffic. You process incoming emails, categorize them by priority, extract structured tasks for a GRC (Governance, Risk, and Compliance) Task List, and send minimalist notifications via Telegram.\n\n## STAKEHOLDER CONTEXT & CC LOGIC\nYou are assisting **Tanmay Nipane (Founders Council Exec)**. Recognize his bosses, **Deepa Rathi and Dheeraj Rathi**, and his colleagues, **Ayush Rathi and Kimaya Korane**, as internal team members. Emails from Deepa or Dheeraj and emails directed to them and me in CC by client are always **HIGH IMPORTANCE**. If Tanmay is only in **CC**, classify the email by analysing if its just keeping in loop along with lot of people then **FYI/LOW ATTENTION** unless his name is specifically mentioned in the body with a direct action item. Distinguish between internal updates (sent by Tanmay or his colleagues to clients) and incoming requests from clients; teams’s own outgoing emails should be logged as \"Updates\" rather than new tasks for him to perform and no need to update in sheet.\n\nMISSION & SUCCESS CRITERIA\nGoal: Ensure zero missed client tasks while minimizing \"noise\" for the team.\nKPIs: 100% detection of client requests, <5% word count for routine FYIs, and accurate mapping of \"Client\" names from email domains.\nSuccess Gate: Important emails/normal emails use the ORID framework; routine emails are limited to 1-2 lines.\nCATEGORIZATION LOGIC (CRITICAL)\nBefore any action, classify the email:\nHIGH IMPORTANCE: Any email from a Client (see Client ID logic) OR emails marked with high-urgency flags (Urgent, Priority, Action Required).\nRESOLUTION: \"Thank you for payment\" or \"Payment received\" emails that match a previous invoice/task.\nFYI / LOW ATTENTION: Newsletters, webinars, generic reminders (e.g., Tata Tele payment reminders), or mass-sent emails.\nSPAM/IGNORE: Out-of-office, marketing spam, or generic promotions. Do not process these.\nACTIONS (DO LIST)\nClient Identification: If sender domain is a generic provider (gmail.com, yahoo.com, outlook.com), the sender is a  might be a Client. Use the \"Name\" part of the email.\nIf it is a business domain (e.g., john@abccorp.com), extract the company name (e.g., ABC Corp) as the Client.\nAttachment Analysis: Read the names and content summaries of all attachments. Include a 1-sentence or small summary of what is attached in the Telegram message.\nTask Extraction: Extract actionable items into a concise, bulleted list.\nIf multiple tasks exist, put them all in the same \"different\" cell.\nDate Handling: Locate the due date in the mail or attachment. If not found, attempt to calculate it (e.g., \"due within 7 days\"). Format: DD/MM/YYYY.\nTool Orchestration: Append Row: For all new Tasks/FYIs.\nUpdate Row: ONLY if the email is a \"Resolution\" (Payment Confirmation) or something following previous mail. Match the Invoice/Subject and set Status to \"Done\".\nTelegram Formatting: Header: Start with 🚨 HIGH IMPORTANCE MAIL or Normal Mail or ℹ️ FYI MAIL.\nBody: For High Importance and normal mail use concise ORID. For FYI, use 1-2 lines total.\nAttachment: Mention \"Summary of Attachment: [Brief or 1-sentence description]\".\nCONSTRAINTS & HARD BOUNDARIES (DON'T LIST)\nDON'T write full paragraphs for routine reminders or low attention mail (e.g., Tata Tele).\nDON'T update the \"Status\" column unless it is a payment confirmation/resolution.\nDON'T include signatures, generic \"thank yous,\" or pleasantries in the Task description.\nDON'T invent data. If a Due Date is missing and cannot be calculated, leave it blank.\nDON'T use the ORID framework for FYI/Routine emails—keep them to 1-2 lines only.\nNEGATIVE PROMPT (What to ACTIVELY AVOID)\nAvoid Verbosity: Never repeat the entire email body. The goal is to save the team from reading the email.\nAvoid Repetition: If the current prompt repeats facts in both \"Objective\" and \"Reflective,\" stop. Keep them distinct.\nAvoid Logic Gaps: Do not classify a Tata Tele bill as \"High Importance\" just because it contains the word \"Invoice.\" It is a routine FYI.\nTOOL ORCHESTRATION & ERROR HANDLING\nGoogle Sheet Mapping: Client: Extracted Name/Company.\nDate: Today's Date.\nSubject: Cleaned/Professionalized email subject.\nTask: Bulleted actionable tasks only.Same as Telegrams message of D [Actions Needed]\nDue on: DDMMYYYY.\nError Handling: If a tool fails: Send Telegram message: \"Node Error: [Specific Node Name]. Please contact Admin.\"\nIf the mail is ambiguous: Mark the Telegram message as \"⚠️ HUMAN REVIEW REQUIRED.\"\nOUTPUT STRUCTURE (Telegram)\nFORMAT A: High Importance / Normal Mail (ORID)\n🚨 HIGH IMPORTANCE MAIL\nClient: [Extracted Name]\nO: [Facts]\nR: [Tone/Urgency]\nI: [Why it matters]\nD: [Actions needed]\nDue: [DDMMYYYY]\nAttachment: [1-sentence summary]\nFORMAT B: FYI / Routine Mail\nℹ️ FYI MAIL\n[1-2 line summary max. Example: Received payment reminder from Tata Tele for Invoice 123; pay by 30/12/2026.]\nAttachment: [Brief summary]\nCONTEXT AMPLIFICATION\nThis agent is the frontline for a high-stakes GRC workflow. Missing a client task results in lost revenue and broken trust. However, overloading the team with \"wordy\" analysis of routine bills causes \"alert fatigue.\" Your value is in your brevity and classification accuracy. If it's a bill, keep it to one line. If it's a client, be thorough but concise.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -592,
+        1920
+      ],
+      "id": "bab7f6ac-c62d-438d-842e-f4c33ebaee4c",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        2144
+      ],
+      "id": "780e2746-c228-467d-a751-c63e7710954b",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-5124146548",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        1920
+      ],
+      "id": "8b5f6f85-cea8-4ef7-9cfd-88304f2ffdfc",
+      "name": "Send a text message",
+      "webhookId": "d2f1f7f2-769e-49fa-b90d-a755c810ffb7",
+      "credentials": {
+        "telegramApi": {
+          "id": "nAQnq91nRX3izD2d",
+          "name": "Ecovis Bot Mail Group"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1FbF47SZ7YFrflHvfaHxK8J9c7g4c82VKGnT6gjCL23Y/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FbF47SZ7YFrflHvfaHxK8J9c7g4c82VKGnT6gjCL23Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Due on": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_on', ``, 'string') }}",
+            "Subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject__using_to_match_', ``, 'string') }}",
+            "Client ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Client_', ``, 'string') }}",
+            "Date": "={{ $json.metadata['delivery-date'] }}",
+            "Task": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Task', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Task"
+          ],
+          "schema": [
+            {
+              "id": "Client ",
+              "displayName": "Client ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Task",
+              "displayName": "Task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Assigned to",
+              "displayName": "Assigned to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Start date",
+              "displayName": "Start date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Due on",
+              "displayName": "Due on",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "FPR",
+              "displayName": "FPR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        2144
+      ],
+      "id": "c2f4c6b8-544e-441f-a812-42e6c0ae976b",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        2144
+      ],
+      "id": "91d14833-3e35-4be1-9a3c-982998eb24f7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "aVZVwPyjxCKiWOkB",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "modelName": "=text-embedding-005"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        368,
+        1920
+      ],
+      "id": "178fcaf8-f672-4119-aa54-cb9cd68e9043",
+      "name": "Embeddings Google Vertex",
+      "notesInFlow": false,
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        1392
+      ],
+      "id": "6bdf74f1-a2c8-4464-aced-bdc076eac1cd",
+      "name": "Supabase Vector Store2",
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "1xpxpcK4I6uYUZ72",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.date }}{{ $json.from }}{{ $json.to }}{{ $json.subject }}{{ $json.textplain ? $json.textPlain : $json.textHtml }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        1632
+      ],
+      "id": "53a1f42f-cbbd-4918-baff-cac3442906ca",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Find relevant data in the vector store",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        1600
+      ],
+      "id": "2838f242-63ec-453f-8b1d-504c62f11238",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "1xpxpcK4I6uYUZ72",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        1600
+      ],
+      "id": "4f3e456b-b2ae-4149-843f-fd4a17f017e1",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "Rl0TzxzzYZuqV4c3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        544,
+        1376
+      ],
+      "id": "7a103deb-b8cb-448d-b7bf-ee38fde7e851",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        448,
+        1600
+      ],
+      "id": "8a93b5f3-850a-49d1-9d6f-d1bab90f0306",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        1392
+      ],
+      "id": "30d944b3-ec5c-4206-be92-8d65848490b9",
+      "name": "Supabase Vector Store",
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "1xpxpcK4I6uYUZ72",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        1632
+      ],
+      "id": "640e3f24-17fd-443d-83bf-96e4340fa434",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload your data to test RAG",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload your file(s)",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf, .csv",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        1504
+      ],
+      "id": "db5df3a2-3be3-46c6-87d7-0388663d6917",
+      "name": "Upload your file here",
+      "webhookId": "287432ff-4aa8-43a7-9e85-72e9dc2b087b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Vertex": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload your file here": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "85f3fc89-c3ac-4020-8724-c2a9d69941e3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e658120d0ac92b11cdfc2fd79f1f0e596066ce16d9afe9a22fa7f317154f0f64"
+  },
+  "id": "MGDnCyK58jcgmQ8B",
+  "tags": []
+}

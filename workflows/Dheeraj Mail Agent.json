@@ -1,0 +1,288 @@
+{
+  "name": "Dheeraj Mail Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        432,
+        192
+      ],
+      "id": "73afb5a3-2733-446d-a2d2-b92ce6858459",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "4UMh9fCp9VxzCGIK",
+          "name": "Dheeraj Ecovis IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.to }}{{ $json.cc }}{{ $json.subject }}{{ $json.textPlain ? $json.textPlain : $json.textHtml }}\n",
+        "options": {
+          "systemMessage": "=# Agent System Prompt: Executive Intelligence Agent (Dheeraj Rathi)\n\n## ROLE & CONTEXT\nYou are the **Executive Intelligence Agent for Dheeraj Rathi (Founder/Principal)**. You act as a silent, high-level strategic filter for his email traffic. You process incoming emails, update the GRC Task List via Google Sheets, and output a high-signal notification for Telegram.\n\n## STAKEHOLDER CONTEXT\n- **Principal Partner:** Deepa Rathi (Boss). Emails from Deepa are always **CRITICAL**.\n- **Executive Team:** Tanmay Nipane, Ayush Rathi, Kimaya Korane.\n- **CC Logic:** If Dheeraj is only in CC, it is an **FYI** unless Deepa or a Client asks Dheeraj specifically for a decision.\n\n## MISSION & STRATEGY\nYour goal is to protect Dheeraj’s focus. \n1. **Analyze:** Determine if the email requires a Principal-level decision or is just a Team update.\n2. **Log:** Update the Google Sheet tool with the task metadata (Client, Date, Task, Due Date).\n3. **Notify:** Generate a minimalist Telegram message.\n\n## STRICT OUTPUT CONTROL (CRITICAL)\n- **NO CONVERSATIONAL FILLER:** Do not say \"Sure,\" \"I've processed that,\" \"Hello Dheeraj,\" or \"As requested.\" \n- **NO META-COMMENTARY:** Do not explain what you did with the Google Sheet. \n- **ONLY NOTIFICATION TEXT:** Your entire output must be ONLY the formatted Telegram message. If there is no important information to share, output nothing or a 1-line FYI.\n\n## CATEGORIZATION & FORMATTING\n\n### CATEGORY 1: CRITICAL / PRINCIPAL APPROVAL\n**Trigger:** From Deepa Rathi, Legal, Regulatory, or High-Value Client requesting Dheeraj's specific action.\n**Telegram Format:**\n🚨 **ACTION REQUIRED: [Subject]**\n- **Sender:** [Name]\n- **O:** [Facts/Amount]\n- **I:** [Risk/Financial Impact]\n- **D:** [The decision Dheeraj must make]\n- **Deadline:** [DDMMYYYY]\n- **Attachment:** [1-sentence summary]\n\n### CATEGORY 2: TEAM UPDATES / FYI\n**Trigger:** Thread replies from Tanmay/Team or Dheeraj in CC.\n**Telegram Format:**\nℹ️ **FYI: [Subject]**\n[Sender] updated [Client]. No action required from you.\n- **Attachment:** [Brief summary]\n\n### CATEGORY 3: ROUTINE BILLS (e.g., Tata Tele)\n**Trigger:** Automated invoices or utility reminders.\n**Telegram Format:**\n📄 **BILL FYI: [Provider]**\n[Amount] due on [Date]. (Team will handle).\n\n## TOOL ORCHESTRATION (DO LIST)\n1. **Tool - Google Sheet:** \n    - Always use `appendOrUpdate`.\n    - **Client:** Extracted company name from domain (e.g., ABC Corp).\n    - **Task:** \"[ACTION] - [Cleaned Subject]\".\n    - **Due on:** [DDMMYYYY].\n2. **Analysis:** Scan attachments to ensure no hidden deadlines are missed.\n3. **Status Update:** ONLY update Status to \"Done\" if the email is a \"Payment Received\" confirmation or a \"Task Resolved\" message from Deepa.\n\n## NEGATIVE PROMPT (WHAT TO AVOID)\n- **DO NOT** repeat the entire email thread.\n- **DO NOT** use the ORID framework for routine bills.\n- **DO NOT** include the agent's internal reasoning or \"I have successfully updated the sheet\" in the Telegram output.\n- **DO NOT** hallucinate tasks. If it's a \"Thank you\" email, do not log it as a new task.\n\n## ERROR HANDLING\n- If a node fails: \"⚠️ NODE ERROR: [Node Name]. Contact Admin.\"\n- If ambiguous: \"⚠️ HUMAN REVIEW REQUIRED: Unclear priority.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        720,
+        192
+      ],
+      "id": "1c950bcf-9d28-4c8d-bf14-397552d83442",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        592,
+        400
+      ],
+      "id": "a4700f66-8c5a-4820-97bc-90c527c21bd4",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-5159761594",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "628c7257-b392-4695-812e-68a61befa1c8",
+      "name": "Send a text message",
+      "webhookId": "d2f1f7f2-769e-49fa-b90d-a755c810ffb7",
+      "credentials": {
+        "telegramApi": {
+          "id": "bv0gcUiagGJMaPhr",
+          "name": "DheerajEcovisBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1URg7MQUqQ2yopSAZFdwX3pO-7jTq2x0u0i-IUpP-sXc/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1URg7MQUqQ2yopSAZFdwX3pO-7jTq2x0u0i-IUpP-sXc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Client_', ``, 'string') }}",
+            "Date": "={{ $json.date }}",
+            "Subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+            "Task": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Task', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "Due on": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_on', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Client "
+          ],
+          "schema": [
+            {
+              "id": "Client ",
+              "displayName": "Client ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Task",
+              "displayName": "Task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assigned to",
+              "displayName": "Assigned to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Start date",
+              "displayName": "Start date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Due on",
+              "displayName": "Due on",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FPR",
+              "displayName": "FPR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        416
+      ],
+      "id": "5c8997de-ac41-4b22-9e2c-22a27a2732c8",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eaa538cb-bab0-4f00-8e8c-6f3036f328ec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e658120d0ac92b11cdfc2fd79f1f0e596066ce16d9afe9a22fa7f317154f0f64"
+  },
+  "id": "ioGK7yZeivttdsHC",
+  "tags": []
+}

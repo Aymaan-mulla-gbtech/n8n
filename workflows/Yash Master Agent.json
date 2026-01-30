@@ -1,0 +1,568 @@
+{
+  "name": "Yash Master Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        528,
+        -144
+      ],
+      "id": "a8eb4de3-20a0-4237-9a26-43b00a262855",
+      "name": "When chat message received",
+      "webhookId": "494e4710-95b8-43eb-b68f-5c9bc72d8a45"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# Role: GRC Project Master Coordinator\nYou are the Chief of Staff for Tanmay Nipane (Founders Council Exec). Your job is to manage the coordination between Mail, Calendar, and Company Documents (RAG) to ensure Tanmay's GRC projects are on track.\n\n# Stakeholder Hierarchy\n- Principal Stakeholders: Deepa and Dheeraj Rathi (Bosses).\n- Colleagues: Ayush Rathi, Kimaya Korane.\n- All requests from Deepa or Dheeraj are TOP PRIORITY.\n\n# Orchestration Logic\n- If the user asks about communications, threads, or drafting: Call the **Mail AI Agent**.\n- If the user asks about meetings, availability, or scheduling: Call the **Calendar AI Agent**.\n- If the user asks about policies, project documents, or historical GRC data: Call the **RAG AI Agent**.\n- If the request is complex (e.g., \"Summarize the latest mail from Client X and find a time for a meeting about it\"): Coordinate calls to multiple agents in sequence.\n\n# Constraints\n- Be concise. Tanmay is busy; give high-signal summaries only.\n- Always check the RAG Agent if a question involves company policy or project \"facts.\"\n- If an instruction is ambiguous, ask for clarification before taking action in Outlook."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        864,
+        -144
+      ],
+      "id": "d9cd7785-0e17-4333-96a8-27d4ae6c97ab",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "modelName": "gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        752,
+        224
+      ],
+      "id": "3b47b8a5-41a2-4392-a5a0-be11cf33259f",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        160,
+        448
+      ],
+      "id": "58836fc1-0e0c-4a53-bc45-6ab0713d9837",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {
+          "ccRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CC_Recipients', ``, 'string') }}",
+          "bodyContentType": "Text",
+          "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        336,
+        432
+      ],
+      "id": "7e86826a-3ff0-4434-9f3b-6b5c7707f463",
+      "name": "Create a draft in Microsoft Outlook",
+      "webhookId": "58130828-5621-41ae-9c58-29254a0f70cc"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {
+          "downloadAttachments": false
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        512,
+        432
+      ],
+      "id": "344502bd-4260-4903-8916-3384cf2c8418",
+      "name": "Get a message in Microsoft Outlook",
+      "webhookId": "58130828-5621-41ae-9c58-29254a0f70cc"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filtersUI": {
+          "values": {
+            "filterBy": "search",
+            "search": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        688,
+        432
+      ],
+      "id": "ec6e7b79-664f-43f0-a014-953beedbb960",
+      "name": "Get many messages in Microsoft Outlook",
+      "webhookId": "69d0424c-9e51-4a33-882d-721862c06096"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        896,
+        432
+      ],
+      "id": "d790f801-a16f-402e-8269-8ff9adec2f4c",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "# Role: GRC Mail Specialist\nYou manage Tanmay Nipane's professional communications. \n\n# Operational Instructions\n- **Summarization:** Use the ORID framework for long threads (Objective, Reflective, Interpretive, Decisional).\n- **Drafting:** When creating drafts, maintain a professional, executive tone. Mention attachments if necessary.\n- **Filtering:** \n    - If Tanmay is only in CC, treat it as FYI unless he is mentioned by name.\n    - Identify clients by domain names (e.g., @clientcorp.com).\n- **Privacy:** Never include sensitive PII in summaries unless essential for the task.\n\n# Tool Usage\n- Use `get_messages` to analyze context.\n- Use `create_draft` to prepare responses for Tanmay's review; DO NOT send emails directly without a draft stage unless explicitly told \"Send this now.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        224
+      ],
+      "id": "d16c2275-fe34-4764-9812-42a07ed15833",
+      "name": "Mail AI Agent"
+    },
+    {
+      "parameters": {
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "# Role: GRC Calendar Coordinator\nYou manage Tanmay's schedule and meeting coordination.\n\n# Scheduling Rules\n- **Priority:** Meetings with Deepa or Dheeraj Rathi take absolute precedence. \n- **Buffer:** Always try to leave 10-15 minutes between meetings.\n- **Context:** When creating an event, look at the recent emails (via the Master Agent) to populate the meeting description with the relevant \"Decisional\" (D) points from the ORID analysis.\n- **Formatting:** Dates must be processed in DDMMYYYY for internal logging.\n\n# Tool Usage\n- Use `get_events` to check for conflicts before proposing a time.\n- Use `create_event` only when a specific time has been confirmed or requested."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        224
+      ],
+      "id": "ed1d78bc-fada-4dcb-a3c9-ecc66b0830d3",
+      "name": "Calendar AI Agent"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        432
+      ],
+      "id": "162e8a62-feb0-42ae-ba6b-96a545a4c284",
+      "name": "Get many events in Microsoft Outlook",
+      "webhookId": "a2ba595b-d6e3-45c9-8e66-b9202464db84"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', ``, 'string') }}",
+          "mode": "id"
+        },
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "startDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "endDateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        432
+      ],
+      "id": "f9a8886f-60d7-4f1e-b209-4e25d8a01695",
+      "name": "Create an event in Microsoft Outlook",
+      "webhookId": "94c5d003-616c-4e45-be1c-ef50c7d224fa"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Find relevant data in the vector store",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        448
+      ],
+      "id": "46f8ddd6-cc86-46db-a415-a43af427561e",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "1xpxpcK4I6uYUZ72",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        656
+      ],
+      "id": "263323c2-8f28-4778-861e-5d44bed900bf",
+      "name": "Embeddings Google Vertex",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gst-for-n8n",
+          "mode": "list",
+          "cachedResultName": "GST For n8n"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        448
+      ],
+      "id": "0ea2894d-dd73-4c1f-8522-f99b6f1ed49e",
+      "name": "Google Vertex Chat Model3",
+      "credentials": {
+        "googleApi": {
+          "id": "lHBRSUGvLWVBJuFZ",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        448
+      ],
+      "id": "c81d0e51-267c-484e-9eec-e89eee914393",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "Rl0TzxzzYZuqV4c3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "# Role: GRC Knowledge Librarian\nYou have access to all company documents, GRC frameworks, and project archives via the Supabase Vector Store.\n\n# Search Strategy\n- When the Master Agent asks a question, query the vector store for the most relevant project documentation.\n- **Accuracy over Speed:** If the document doesn't contain the answer, state \"I cannot find this in our current documentation.\" Never hallucinate project facts.\n- **Synthesis:** When you find an answer, categorize it:\n    1. **Current Status:** What the document says is happening now.\n    2. **Compliance Link:** Which GRC rule this relates to.\n    3. **Reference:** The name of the document you found the info in.\n\n# Prohibitions\n- Do not provide information from general knowledge; only provide information found in the retrieved snippets from the Supabase Vector Store."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        224
+      ],
+      "id": "b334275d-fa43-4de0-b08d-ef83121b777d",
+      "name": "RAG AI Agent Tool"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        96
+      ],
+      "id": "1be566bb-4864-4a77-882c-5144e4430a22",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Mail AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Microsoft Outlook": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message in Microsoft Outlook": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Microsoft Outlook": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail AI Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar AI Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events in Microsoft Outlook": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Microsoft Outlook": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Vertex": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent Tool",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "faecbae4-42f1-4b09-a12f-0d1e2a2fc824",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e658120d0ac92b11cdfc2fd79f1f0e596066ce16d9afe9a22fa7f317154f0f64"
+  },
+  "id": "ffDqQOQjN3wUnvkY",
+  "tags": []
+}
